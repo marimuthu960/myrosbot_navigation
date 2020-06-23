@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+
+	 <!-- Arguments for mapserver -->
+
+  <arg name="map_file" default="$(find testbot1)/description/maps/mymap.yaml"/>
+
+ 	 <!-- Arguments for rviz -->
+
+  <arg name="open_rviz" default="true"/>
+
+ 	 <!-- Arguments for movebase -->
+
+  <arg name="move_forward_only" default="false"/>
+
+
+	 <!-- Arguments for amcl--> 
+
+  <arg name="scan_topic" default="scan"/>
+  <arg name="x" default="-3" />
+  <arg name="y" default="1" />             <!-- This can be also configured by published initial pose tope topic -->
+  <arg name="yaw" default="0" />
+
+
+        <!--Arguments for URDF position in gazebo world-->
+
+  <arg name="x_pos" default="-3.0"/>
+  <arg name="y_pos" default="1.0"/>
+  <arg name="z_pos" default="0.0"/>
+
+
+  <!-- Testbot1 robot state and joint state publish -->
+  <include file="$(find myrosbot_navigation)/launch/navigation/myrosbot_remote.launch" />
+
+
+  <!-- Map server -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" >
+        <param name="frame_id" value="/map" />
+    </node>
+
+
+  <!-- AMCL -->
+  <include file="$(find myrosbot_navigation)/launch/navigation/amcl.launch">
+
+  <arg name="scan_topic"     value="$(arg scan_topic)"/>
+  <arg name="initial_pose_x" value="$(arg x)"/>     
+  <arg name="initial_pose_y" value="$(arg y)"/>
+  <arg name="initial_pose_a" value="$(arg yaw)"/>
+
+
+  </include>
+
+
+  <!-- move_base -->
+  <include file="$(find myrosbot_navigation)/launch/navigation/move_base.launch">
+    <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+
+  </include>
+
+
+  <!-- rviz -->
+  <group if="$(arg open_rviz)"> 
+    <node pkg="rviz" type="rviz" name="rviz" 
+          args="-d $(find myrosbot_navigation)/rviz/myrosbot_navigation.rviz"/>
+  </group>
+
+
+ <!-- Urdf model and gazebo config -->
+  <include file="$(find myrosbot_navigation)/launch/navigation/myrosbot_gazebo.launch">
+
+  <arg name="x_pos" value="$(arg x_pos)"/>
+  <arg name="y_pos" value="$(arg y_pos)"/>
+  <arg name="z_pos" value="$(arg z_pos)"/>
+
+</include>
+
+
+
+</launch>
